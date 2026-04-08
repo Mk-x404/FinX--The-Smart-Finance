@@ -263,7 +263,11 @@ const App: React.FC = () => {
       insights.push({ title: 'Daily Limit', text: `You can spend PKR ${summary.dailySpendLimit.toLocaleString()}/day for the rest of this month.`, urgency: 'low', color: 'bg-emerald-500', action: () => setActiveTab('dashboard') });
     }
     if (insights.length === 0) {
-      insights.push({ title: 'All Good!', text: 'Your finances look healthy. Keep up the great work! 🎉', urgency: 'low', color: 'bg-emerald-500', action: () => {} });
+      if (isLoading) {
+        insights.push({ title: 'Syncing Data...', text: 'Connecting to FinX cloud to fetch your latest records...', urgency: 'low', color: 'bg-indigo-500', action: () => {} });
+      } else {
+        insights.push({ title: 'All Good!', text: 'Your finances look healthy. Keep up the great work! 🎉', urgency: 'low', color: 'bg-emerald-500', action: () => {} });
+      }
     }
     return insights.slice(0, 3);
   }, [summary]);
