@@ -223,7 +223,22 @@ const App: React.FC = () => {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [income, setIncome] = useState<Income[]>([]);
   const [loans, setLoans] = useState<Loan[]>([]);
-  const [summary, setSummary] = useState<FinancialSummary | null>(null);
+  const [summary, setSummary] = useState<FinancialSummary>({
+    totalExpenses: 0,
+    totalIncome: 0,
+    totalSavings: 0,
+    totalLoans: 0,
+    remainingBudget: 0,
+    budgetUsedPercent: 0,
+    savingsProgress: 0,
+    financialHealthScore: 0,
+    categoryBreakdown: [],
+    incomeBreakdown: [],
+    dailySpendLimit: 0,
+    repaymentPlans: [],
+    monthlyBudget: 0,
+    savingsGoal: 0
+  });
   const [isLoading, setIsLoading] = useState(true);
 
   // Computed data from real API
@@ -285,6 +300,9 @@ const App: React.FC = () => {
       setIncome(incData);
       setLoans(loanData);
       setSummary(sumData);
+      
+      // Ensure GSAP recalculates triggers after content loads
+      setTimeout(() => ScrollTrigger.refresh(), 100);
     } catch (error) {
       showToast('Error syncing data', 'error');
     } finally {
@@ -434,7 +452,7 @@ const App: React.FC = () => {
         ['Financial Health', `${Math.round(summary?.savingsProgress || 0)}%`],
       ],
       theme: 'striped',
-      headStyles: { fillStyle: [240, 180, 41] as any }
+      headStyles: { fillColor: [240, 180, 41] as any }
     });
 
     // Expenses Table
@@ -739,7 +757,7 @@ const App: React.FC = () => {
                   </div>
 
                   {/* Quick Actions */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 scroll-section">
+                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
                     <QuickAction icon={Plus} label="Add Expense" color="rose" onClick={() => setActiveModal('expense')} />
                     <QuickAction icon={TrendingUp} label="Add Income" color="emerald" onClick={() => setActiveModal('income')} />
                     <QuickAction icon={PiggyBank} label="Add Saving" color="amber" onClick={() => setActiveModal('saving')} />
@@ -774,7 +792,7 @@ const App: React.FC = () => {
                 </AnimatePresence>
 
                 {/* Dynamic Insights */}
-                <section className="scroll-section space-y-6">
+                <section className="space-y-6">
                   <h3 className="text-2xl font-black text-[var(--text-main)] flex items-center gap-2">
                     <Sparkles size={24} className="text-gold" />
                     Smart Insights
@@ -808,7 +826,7 @@ const App: React.FC = () => {
                 </section>
 
                 {/* Charts Row */}
-                <section className="grid grid-cols-1 lg:grid-cols-2 gap-8 scroll-section">
+                <section className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                   <div className="bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-sm">
                     <h3 className="text-xl font-black mb-8 flex items-center gap-2">
                       <BarChart3 size={20} className="text-gold" />
@@ -867,7 +885,7 @@ const App: React.FC = () => {
                 </section>
 
               {/* Expense Tracker Table */}
-              <section className="scroll-section space-y-6">
+              <section className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-black text-[var(--text-main)] flex items-center gap-2">
                     <Receipt size={24} className="text-indigo-500" />
@@ -922,7 +940,7 @@ const App: React.FC = () => {
               </section>
 
               {/* Udhar Tracker */}
-              <section className="scroll-section space-y-6">
+              <section className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-2xl font-black text-[var(--text-main)] flex items-center gap-2">
                     <Handshake size={24} className="text-gold" />
@@ -937,7 +955,7 @@ const App: React.FC = () => {
                       whileHover={{ y: -10 }}
                       className={cn(
                         "bg-[var(--bg-card)] p-8 rounded-[3rem] border border-[var(--border-color)] shadow-sm relative overflow-hidden",
-                        loan.status === 'Overdue' && "ring-2 ring-rose-500 ring-offset-4 dark:ring-offset-[#0f1117] shadow-[0_0_30px_-10px_rgba(244,63,94,0.5)]"
+                        loan.status === 'overdue' && "ring-2 ring-rose-500 ring-offset-4 dark:ring-offset-[#0f1117] shadow-[0_0_30px_-10px_rgba(244,63,94,0.5)]"
                       )}
                     >
                       <div className="flex justify-between items-start mb-6">
@@ -1315,7 +1333,7 @@ const App: React.FC = () => {
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: 50, opacity: 0, scale: 0.9 }}
               transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-              className="w-[450px] h-[650px] bg-[var(--bg-card)] border-2 border-gold rounded-[3rem] shadow-2xl p-8 flex flex-col"
+              className="w-[380px] max-w-[90vw] h-[600px] max-h-[85vh] bg-[var(--bg-card)] border-2 border-gold rounded-[3rem] shadow-2xl p-6 flex flex-col"
             >
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-2">
