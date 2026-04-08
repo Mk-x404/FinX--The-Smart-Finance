@@ -270,7 +270,7 @@ const App: React.FC = () => {
       }
     }
     return insights.slice(0, 3);
-  }, [summary]);
+  }, [summary, isLoading]);
 
   const incomeVsExpenseData = useMemo(() => {
     if (!summary) return [];
