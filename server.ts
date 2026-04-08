@@ -136,8 +136,26 @@ async function startServer() {
   });
 
   app.post('/api/loans/:id/settle', (req, res) => {
-    db.prepare("UPDATE loans SET status = 'paid' WHERE id = ?").run(req.params.id);
-    res.json({ success: true });
+    const loan = db.prepare('SELECT amount, vendor_name FROM loans WHERE id = ?').get(req.params.id) as any;
+    if (!loan) return res.status(404).json({ error: 'Loan not found' });
+
+    const settleTransaction = db.transaction(() => {
+      // 1. Mark loan as paid
+      db.prepare("UPDATE loans SET status = 'paid' WHERE id = ?").run(req.params.id);
+      
+      // 2. Create corresponding expense entry
+      const expenseId = crypto.randomUUID();
+      const date = new Date().toISOString().split('T')[0];
+      db.prepare('INSERT INTO expenses (id, amount, category, date, note) VALUES (?, ?, ?, ?, ?)')
+        .run(expenseId, loan.amount, 'Debt Repayment', date, `Repayment to ${loan.vendor_name}`);
+    });
+
+    try {
+      settleTransaction();
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to settle loan' });
+    }
   });
 
   app.delete('/api/loans/:id', (req, res) => {
